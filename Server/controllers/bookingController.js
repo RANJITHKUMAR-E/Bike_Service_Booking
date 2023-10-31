@@ -1,4 +1,7 @@
-const bookingModel = require("../models/bookingModel");
+const bookingModel=require("../models/bookingModel");
+const userModel=require("../models/userModel");
+const {v4: uuidv4}=require('uuid');
+const {sendMailForServiceStatus}=require("./mailController");
 
 exports.getBooking=async (req, res) =>
 {
@@ -60,8 +63,15 @@ exports.bookService=async (req, res) =>
 {
     const data=req.body
     try {
+        data.bookingId=uuidv4()
+        data.bookingStatus='service booked'
+        data.dateOfBooking=new Date()
         const newBooking=new bookingModel(data);
         await newBooking.save()
+
+        const user=await userModel.find({userId: data.userId})
+
+        sendMailForServiceStatus(user.mailId, 'Service booking in Johns Garage 🏍', 'Service booked')
 
         res.status(200).json({
             message: "Booking added successfully 😌",
@@ -82,6 +92,10 @@ exports.updateSericeStatus=async (req, res) =>
     try {
 
         await bookingModel.updateOne({bookingId: req.params.id}, data, {upsert: true})
+
+        const user=await userModel.find({userId: data.userId})
+
+        sendMailForServiceStatus(user.mailId, 'Service booking in Johns Garage 🏍', data.bookingStatus)
 
         res.status(200).json({
             message: "Booking data updated successfully 😌",
