@@ -1,8 +1,10 @@
 import React from "react";
 import { Col } from "reactstrap";
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 import "../../styles/car-item.css";
 import axios from "axios";
+import BookingModel from "./bookingModel";
 
 async function bookService(serviceId) {
   const userId = JSON.parse(localStorage.getItem("userData")).userId;
@@ -10,7 +12,9 @@ async function bookService(serviceId) {
     serviceId,
     userId,
   });
-  console.log(result);
+  if (result.status === 200) toast.success("Service booked");
+  else toast.warning("Something went wrong!");
+  BookingModel();
 }
 
 const CardItem = (props) => {
@@ -24,6 +28,7 @@ const CardItem = (props) => {
 
   return (
     <Col lg="4" md="4" sm="6" className="mb-5">
+      <ToastContainer theme="colored" />
       <div className="car__item">
         <div className="car__img">
           <img
